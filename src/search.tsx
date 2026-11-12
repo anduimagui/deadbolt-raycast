@@ -160,135 +160,171 @@ export default function Command() {
           ) : undefined
         }
       />
-      {(data?.items ?? []).map((item) => (
-        <List.Item
-          key={item.id}
-          title={item.label}
-          subtitle={item.extra}
-          icon={Icon.Key}
-          actions={
-            <ActionPanel>
-              <ActionPanel.Section title="Copy">
-                <Action
-                  title="Copy ID"
-                  icon={Icon.Hashtag}
-                  shortcut={Keyboard.Shortcut.Common.Copy}
-                  onAction={async () => {
-                    const ref = `deadbolt://${item.id}`;
-                    await Clipboard.copy(ref);
-                    await showHUD(`Copied ${ref}`);
-                  }}
-                />
-                <Action
-                  title="Copy Password"
-                  icon={Icon.CopyClipboard}
-                  shortcut={{ modifiers: ["cmd", "shift"], key: "p" }}
-                  onAction={async () => {
-                    try {
-                      await copySecret(await get(bin, item.id), "password");
-                    } catch (err) {
-                      await toastError(err);
+      {(() => {
+        const starred = (data?.items ?? []).filter((item) =>
+          favorites.has(item.id),
+        );
+        const unstarred = (data?.items ?? []).filter(
+          (item) => !favorites.has(item.id),
+        );
+        const renderItem = (item: DeadboltItem) => (
+          <List.Item
+            key={item.id}
+            title={item.label}
+            subtitle={item.extra}
+            icon={Icon.Key}
+            actions={
+              <ActionPanel>
+                <ActionPanel.Section title="Copy">
+                  <Action
+                    title="Copy ID"
+                    icon={Icon.Hashtag}
+                    shortcut={Keyboard.Shortcut.Common.Copy}
+                    onAction={async () => {
+                      const ref = `deadbolt://${item.id}`;
+                      await Clipboard.copy(ref);
+                      await showHUD(`Copied ${ref}`);
+                    }}
+                  />
+                  <Action
+                    title="Copy Password"
+                    icon={Icon.CopyClipboard}
+                    shortcut={{ modifiers: ["cmd", "shift"], key: "p" }}
+                    onAction={async () => {
+                      try {
+                        await copySecret(await get(bin, item.id), "password");
+                      } catch (err) {
+                        await toastError(err);
+                      }
+                    }}
+                  />
+                  <Action
+                    title="Copy Username"
+                    icon={Icon.Person}
+                    onAction={async () => {
+                      try {
+                        await Clipboard.copy(
+                          await get(bin, item.id, "username"),
+                        );
+                        await showHUD("Copied username");
+                      } catch (err) {
+                        await toastError(err);
+                      }
+                    }}
+                  />
+                  <Action
+                    title="Copy URL"
+                    icon={Icon.Link}
+                    onAction={async () => {
+                      try {
+                        await Clipboard.copy(await get(bin, item.id, "url"));
+                        await showHUD("Copied URL");
+                      } catch (err) {
+                        await toastError(err);
+                      }
+                    }}
+                  />
+                  <Action
+                    title="Copy One-Time Code"
+                    icon={Icon.Stopwatch}
+                    onAction={async () => {
+                      try {
+                        await Clipboard.copy(await code(bin, item.id));
+                        await showHUD("Copied one-time code");
+                      } catch (err) {
+                        await toastError(err);
+                      }
+                    }}
+                  />
+                </ActionPanel.Section>
+                <ActionPanel.Section title="Item">
+                  <Action
+                    title={favorites.has(item.id) ? "Unstar Item" : "Star Item"}
+                    icon={
+                      favorites.has(item.id) ? Icon.StarDisabled : Icon.Star
                     }
-                  }}
-                />
-                <Action
-                  title="Copy Username"
-                  icon={Icon.Person}
-                  onAction={async () => {
-                    try {
-                      await Clipboard.copy(await get(bin, item.id, "username"));
-                      await showHUD("Copied username");
-                    } catch (err) {
-                      await toastError(err);
-                    }
-                  }}
-                />
-                <Action
-                  title="Copy URL"
-                  icon={Icon.Link}
-                  onAction={async () => {
-                    try {
-                      await Clipboard.copy(await get(bin, item.id, "url"));
-                      await showHUD("Copied URL");
-                    } catch (err) {
-                      await toastError(err);
-                    }
-                  }}
-                />
-                <Action
-                  title="Copy One-Time Code"
-                  icon={Icon.Stopwatch}
-                  onAction={async () => {
-                    try {
-                      await Clipboard.copy(await code(bin, item.id));
-                      await showHUD("Copied one-time code");
-                    } catch (err) {
-                      await toastError(err);
-                    }
-                  }}
-                />
-              </ActionPanel.Section>
-              <ActionPanel.Section title="Item">
-                <Action
-                  title={favorites.has(item.id) ? "Unstar Item" : "Star Item"}
-                  icon={favorites.has(item.id) ? Icon.StarDisabled : Icon.Star}
-                  onAction={async () => {
-                    const starred = !favorites.has(item.id);
-                    try {
-                      await setFavorite(bin, item.id, starred);
-                      await showHUD(
-                        starred
-                          ? `Starred ${item.label}`
-                          : `Unstarred ${item.label}`,
-                      );
+                    onAction={async () => {
+                      const starred = !favorites.has(item.id);
+                      try {
+                        await setFavorite(bin, item.id, starred);
+                        await showHUD(
+                          starred
+                            ? `Starred ${item.label}`
+                            : `Unstarred ${item.label}`,
+                        );
+                        await revalidate();
+                      } catch (err) {
+                        await toastError(err);
+                      }
+                    }}
+                  />
+                  <Action
+                    title="Show Fields"
+                    icon={Icon.Eye}
+                    onAction={() => loadDetail(item)}
+                  />
+                  <Action
+                    title="Open in Deadbolt"
+                    icon={Icon.AppWindow}
+                    shortcut={Keyboard.Shortcut.Common.OpenWith}
+                    onAction={async () => {
+                      try {
+                        await openApp(bin);
+                        await showHUD("Opened Deadbolt");
+                      } catch (err) {
+                        await toastError(err);
+                      }
+                    }}
+                  />
+                </ActionPanel.Section>
+                <ActionPanel.Section title="Vault">
+                  <Action
+                    title="Lock Deadbolt"
+                    icon={Icon.Lock}
+                    onAction={async () => {
+                      try {
+                        await lock(bin);
+                        await showHUD("Deadbolt locked");
+                        await popToRoot();
+                      } catch (err) {
+                        await toastError(err);
+                      }
+                    }}
+                  />
+                  <Action
+                    title="Reload Items"
+                    icon={Icon.ArrowClockwise}
+                    onAction={async () => {
                       await revalidate();
-                    } catch (err) {
-                      await toastError(err);
-                    }
-                  }}
-                />
-                <Action
-                  title="Show Fields"
-                  icon={Icon.Eye}
-                  onAction={() => loadDetail(item)}
-                />
-                <Action
-                  title="Open Deadbolt"
-                  icon={Icon.AppWindow}
-                  onAction={async () => await openApp(bin)}
-                />
-              </ActionPanel.Section>
-              <ActionPanel.Section title="Vault">
-                <Action
-                  title="Lock Deadbolt"
-                  icon={Icon.Lock}
-                  onAction={async () => {
-                    try {
-                      await lock(bin);
-                      await showHUD("Deadbolt locked");
-                      await popToRoot();
-                    } catch (err) {
-                      await toastError(err);
-                    }
-                  }}
-                />
-                <Action
-                  title="Reload Items"
-                  icon={Icon.ArrowClockwise}
-                  onAction={async () => {
-                    await revalidate();
-                  }}
-                />
-                <Action
-                  title="Extension Preferences"
-                  icon={Icon.Gear}
-                  onAction={() => openExtensionPreferences()}
-                />
-              </ActionPanel.Section>
-            </ActionPanel>
-          }
-        />
-      ))}
+                    }}
+                  />
+                  <Action
+                    title="Extension Preferences"
+                    icon={Icon.Gear}
+                    onAction={() => openExtensionPreferences()}
+                  />
+                </ActionPanel.Section>
+              </ActionPanel>
+            }
+          />
+        );
+        return (
+          <>
+            {starred.length > 0 && (
+              <List.Section title="Starred">
+                {starred.map(renderItem)}
+              </List.Section>
+            )}
+            {unstarred.length > 0 && (
+              <List.Section
+                title={starred.length > 0 ? "All Items" : undefined}
+              >
+                {unstarred.map(renderItem)}
+              </List.Section>
+            )}
+          </>
+        );
+      })()}
     </List>
   );
 }
