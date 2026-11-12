@@ -18,14 +18,10 @@ declare type Preferences = ExtensionPreferences
 declare namespace Preferences {
   /** Preferences accessible in the `search` command */
   export type Search = ExtensionPreferences & {}
-  /** Preferences accessible in the `lock` command */
-  export type Lock = ExtensionPreferences & {}
 }
 
 declare namespace Arguments {
   /** Arguments passed to the `search` command */
   export type Search = {}
-  /** Arguments passed to the `lock` command */
-  export type Lock = {}
 }
 

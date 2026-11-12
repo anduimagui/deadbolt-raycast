@@ -2,7 +2,7 @@
   "name": "deadbolt-raycast",
   "title": "Deadbolt",
   "description": "Search your Deadbolt vault and copy passwords, usernames, URLs and one-time codes.",
-  "icon": "icon.png",
+  "icon": "deadbolt.png",
   "author": "anduimagui",
   "license": "MIT",
   "scripts": {
@@ -14,17 +14,10 @@
   "commands": [
     {
       "name": "search",
-      "title": "Search Deadbolt",
+      "title": "Search Passwords",
       "description": "Search items in your Deadbolt vault and copy fields.",
       "mode": "view",
-      "icon": "icon.png"
-    },
-    {
-      "name": "lock",
-      "title": "Lock Deadbolt",
-      "description": "Lock the Deadbolt store.",
-      "mode": "no-view",
-      "icon": "icon.png"
+      "icon": "deadbolt.png"
     }
   ],
   "preferences": [
