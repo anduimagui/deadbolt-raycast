@@ -18,12 +18,25 @@ import {
   DeadboltError,
   DeadboltItem,
   code,
+  favoriteIds,
   get,
   listItems,
   lock,
   openApp,
+  setFavorite,
   show,
 } from "./deadbolt";
+
+/** Items plus the set of starred ids, fetched together. */
+async function loadVault(
+  bin: string,
+): Promise<{ items: DeadboltItem[]; favorites: Set<string> }> {
+  const [items, favorites] = await Promise.all([
+    listItems(bin),
+    favoriteIds(bin),
+  ]);
+  return { items, favorites };
+}
 
 interface Preferences {
   deadboltPath?: string;
@@ -56,12 +69,13 @@ async function toastError(err: unknown) {
 export default function Command() {
   const bin = useBin();
   const { isLoading, data, error, revalidate } = useCachedPromise(
-    listItems,
+    loadVault,
     [bin],
     {
       keepPreviousData: true,
     },
   );
+  const favorites = data?.favorites ?? new Set<string>();
   const [detailId, setDetailId] = useState<string | null>(null);
   const [detailText, setDetailText] = useState<string | null>(null);
 
@@ -116,7 +130,7 @@ export default function Command() {
         title={
           locked
             ? "Deadbolt is locked"
-            : data?.length
+            : data?.items.length
               ? undefined
               : "No items found"
         }
@@ -146,7 +160,7 @@ export default function Command() {
           ) : undefined
         }
       />
-      {(data ?? []).map((item) => (
+      {(data?.items ?? []).map((item) => (
         <List.Item
           key={item.id}
           title={item.label}
@@ -215,6 +229,24 @@ export default function Command() {
                 />
               </ActionPanel.Section>
               <ActionPanel.Section title="Item">
+                <Action
+                  title={favorites.has(item.id) ? "Unstar Item" : "Star Item"}
+                  icon={favorites.has(item.id) ? Icon.StarDisabled : Icon.Star}
+                  onAction={async () => {
+                    const starred = !favorites.has(item.id);
+                    try {
+                      await setFavorite(bin, item.id, starred);
+                      await showHUD(
+                        starred
+                          ? `Starred ${item.label}`
+                          : `Unstarred ${item.label}`,
+                      );
+                      await revalidate();
+                    } catch (err) {
+                      await toastError(err);
+                    }
+                  }}
+                />
                 <Action
                   title="Show Fields"
                   icon={Icon.Eye}

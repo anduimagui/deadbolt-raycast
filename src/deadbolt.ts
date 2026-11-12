@@ -111,6 +111,24 @@ export function listItems(
   return run(bin, type ? ["ls", "--type", type] : ["ls"]).then(parseItems);
 }
 
+/** Short ids of starred items, from `ls --favorites`. */
+export function favoriteIds(bin: DeadboltBinary): Promise<Set<string>> {
+  return run(bin, ["ls", "--favorites"]).then(
+    (out) => new Set(parseItems(out).map((item) => item.id)),
+  );
+}
+
+/** Star or unstar an item. */
+export function setFavorite(
+  bin: DeadboltBinary,
+  id: string,
+  favorite: boolean,
+): Promise<void> {
+  return run(bin, ["set", id, favorite ? "--favorite" : "--no-favorite"]).then(
+    () => undefined,
+  );
+}
+
 /** Raw value of the item's default field, or of a named field. */
 export function get(
   bin: DeadboltBinary,
