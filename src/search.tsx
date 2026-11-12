@@ -158,7 +158,7 @@ export default function Command() {
                 <Action
                   title="Copy ID"
                   icon={Icon.Hashtag}
-                  shortcut={{ modifiers: ["cmd", "shift"], key: "c" }}
+                  shortcut={Keyboard.Shortcut.Common.Copy}
                   onAction={async () => {
                     const ref = `deadbolt://${item.id}`;
                     await Clipboard.copy(ref);
@@ -168,7 +168,7 @@ export default function Command() {
                 <Action
                   title="Copy Password"
                   icon={Icon.CopyClipboard}
-                  shortcut={Keyboard.Shortcut.Common.Copy}
+                  shortcut={{ modifiers: ["cmd", "shift"], key: "p" }}
                   onAction={async () => {
                     try {
                       await copySecret(await get(bin, item.id), "password");
