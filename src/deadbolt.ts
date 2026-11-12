@@ -111,6 +111,36 @@ export function listItems(
   return run(bin, type ? ["ls", "--type", type] : ["ls"]).then(parseItems);
 }
 
+/** Short ids of the items of one type, from `ls --type`. */
+function idsOfType(bin: DeadboltBinary, type: string): Promise<Set<string>> {
+  return run(bin, ["ls", "--type", type]).then(
+    (out) => new Set(parseItems(out).map((item) => item.id)),
+  );
+}
+
+/** Short ids of login items. */
+export function loginIds(bin: DeadboltBinary): Promise<Set<string>> {
+  return idsOfType(bin, "login");
+}
+
+/** Short ids of secure-note items. */
+export function noteIds(bin: DeadboltBinary): Promise<Set<string>> {
+  return idsOfType(bin, "note");
+}
+
+/** Keys that `show` prints as metadata, not copyable fields. */
+const META_KEYS = new Set(["type", "label", "id", "favorite", "tags"]);
+
+/** Field names of one item, read from `show` (secrets stay masked there). */
+export function fieldNames(bin: DeadboltBinary, id: string): Promise<string[]> {
+  return show(bin, id).then((out) =>
+    out
+      .split("\n")
+      .map((line) => /^(\S+)\s{2,}\S/.exec(line)?.[1])
+      .filter((key): key is string => !!key && !META_KEYS.has(key)),
+  );
+}
+
 /** Short ids of starred items, from `ls --favorites`. */
 export function favoriteIds(bin: DeadboltBinary): Promise<Set<string>> {
   return run(bin, ["ls", "--favorites"]).then(
