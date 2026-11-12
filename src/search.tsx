@@ -156,6 +156,15 @@ export default function Command() {
             <ActionPanel>
               <ActionPanel.Section title="Copy">
                 <Action
+                  title="Copy ID"
+                  icon={Icon.Hashtag}
+                  shortcut={Keyboard.Shortcut.Common.Copy}
+                  onAction={async () => {
+                    await Clipboard.copy(item.id);
+                    await showHUD(`Copied id ${item.id}`);
+                  }}
+                />
+                <Action
                   title="Copy Password"
                   icon={Icon.CopyClipboard}
                   shortcut={Keyboard.Shortcut.Common.Copy}

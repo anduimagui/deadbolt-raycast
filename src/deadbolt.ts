@@ -104,7 +104,10 @@ function parseItems(output: string): DeadboltItem[] {
     });
 }
 
-export function listItems(bin: DeadboltBinary, type?: "login"): Promise<DeadboltItem[]> {
+export function listItems(
+  bin: DeadboltBinary,
+  type?: "login",
+): Promise<DeadboltItem[]> {
   return run(bin, type ? ["ls", "--type", type] : ["ls"]).then(parseItems);
 }
 
