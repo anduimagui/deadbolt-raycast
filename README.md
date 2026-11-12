@@ -1,15 +1,14 @@
 # Deadbolt for Raycast
 
-Search your Deadbolt vault from Raycast and copy passwords, usernames, URLs and
-one-time codes. The extension drives the `deadbolt` CLI; it stores nothing and
-never touches a passphrase.
+Search Passwords finds items in your Deadbolt vault from Raycast and copies
+passwords, usernames, URLs and one-time codes. The extension drives the
+`deadbolt` CLI; it stores nothing and never touches a passphrase.
 
 ## Commands
 
 | Command | What it does |
 | --- | --- |
-| Search Deadbolt | Lists items from `deadbolt ls`. Copy password (concealed), username, URL, one-time code, show fields, open Deadbolt. |
-| Lock Deadbolt | Runs `deadbolt lock`. |
+| Search Passwords | Lists items from `deadbolt ls`. Copy password (concealed), username, URL, one-time code, show fields, star or unstar, lock the store, open Deadbolt. |
 
 Copied passwords use Raycast's `concealed` copy, so they stay out of Raycast's
 clipboard history and other clipboard managers.

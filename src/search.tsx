@@ -13,7 +13,7 @@ import {
   showHUD,
 } from "@raycast/api";
 import { useCachedPromise } from "@raycast/utils";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   DeadboltError,
   DeadboltItem,
@@ -95,6 +95,17 @@ export default function Command() {
 
   const locked = error instanceof DeadboltError && error.kind === "locked";
 
+  // When the store is locked, send the user straight to Deadbolt to unlock.
+  // Run once per lock episode so unlocking and coming back does not loop.
+  const openedOnLock = useRef(false);
+  useEffect(() => {
+    if (locked && !openedOnLock.current) {
+      openedOnLock.current = true;
+      void openApp(bin);
+    }
+    if (!locked) openedOnLock.current = false;
+  }, [locked, bin]);
+
   if (detailId) {
     return (
       <Detail
@@ -135,7 +146,7 @@ export default function Command() {
               : "No items found"
         }
         description={
-          locked ? "Open Deadbolt to unlock it, then search again." : undefined
+          locked ? "Opening Deadbolt so you can unlock it…" : undefined
         }
         icon={Icon.Lock}
         actions={
@@ -161,6 +172,8 @@ export default function Command() {
         }
       />
       {(() => {
+        // Hide every item while the store is locked.
+        if (locked) return null;
         const starred = (data?.items ?? []).filter((item) =>
           favorites.has(item.id),
         );
